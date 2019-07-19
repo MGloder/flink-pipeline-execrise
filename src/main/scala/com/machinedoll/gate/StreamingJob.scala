@@ -18,21 +18,9 @@
 
 package com.machinedoll.gate
 
-import java.text.SimpleDateFormat
-
 import com.machinedoll.gate.source.GenericSource
 import com.typesafe.config.ConfigFactory
-import javax.annotation.Resource
-import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.scala.function.WindowFunction
-import org.apache.flink.streaming.api.watermark.Watermark
-import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows
-import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow
-import org.apache.flink.util.Collector
 
 /**
  * Skeleton for a Flink Streaming Job.

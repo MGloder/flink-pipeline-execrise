@@ -3,10 +3,7 @@ package com.machinedoll.gate.source
 
 import java.util.Properties
 
-import com.machinedoll.gate.schema.EventTest
 import com.typesafe.config.Config
-import org.apache.flink.api.common.serialization.SimpleStringSchema
-import org.apache.kafka.clients.consumer.KafkaConsumer
 
 object GenericSource {
 
