@@ -41,7 +41,7 @@ object StreamingJob {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
     val exampleSource = GenericSource.getKafkaSource(config, "test")
-
+    env.socketTextStream("127.0.0.1", 9999).print()
     env.execute()
   }
 }
