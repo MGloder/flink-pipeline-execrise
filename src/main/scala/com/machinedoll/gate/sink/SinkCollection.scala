@@ -1,5 +1,28 @@
 package com.machinedoll.gate.sink
 
-object SinkCollection {
+import java.util.Properties
 
+import com.typesafe.config.Config
+
+object SinkCollection {
+  def getKafkaJsonSinkTest(config: Config, topic: String): Unit = {
+
+//    public FlinkKafkaProducer (topicId: String, serializationSchema: SerializationSchema[IN], producerConfig: Properties) {
+
+    val props = new Properties()
+    props.setProperty("bootstrap.servers",
+      config.getString("kafka.kafka-server"))
+    props.setProperty("zookeeper.connect",
+      config.getString("kafka.zookeeper-server"))
+    props.setProperty("group.id",
+      config.getString("kafka.group.id"))
+
+//    val sink = new FlinkKafkaProducer[EventTest](
+//      topic, JsonSerializableSchema
+//    )
+
+
+    // versions 0.10+ allow attaching the records' event timestamp when writing them to Kafka;
+    // this method is not available for earlier Kafka versions
+  }
 }
