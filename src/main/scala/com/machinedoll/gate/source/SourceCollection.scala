@@ -3,16 +3,13 @@ package com.machinedoll.gate.source
 
 import java.util.Properties
 
-import com.machinedoll.gate.schema.EventTest
 import com.typesafe.config.Config
-import org.apache.flink.api.common.serialization.DeserializationSchema
-import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
 import org.apache.flink.streaming.util.serialization.JSONKeyValueDeserializationSchema
-import org.apache.kafka.clients.consumer.KafkaConsumer
 
-object GenericSource {
+object SourceCollection {
 
-  def getKafkaSource(config: Config, topic: String) = {
+  def getKafkaJsonSourceTest(config: Config, topic: String) = {
     val props = new Properties()
     props.setProperty("bootstrap.servers",
       config.getString("kafka.kafka-server"))
@@ -20,10 +17,10 @@ object GenericSource {
       config.getString("kafka.zookeeper-server"))
     props.setProperty("group.id",
       config.getString("kafka.group.id"))
-    props.setProperty("enable.auto")
     // JSON
-    new KafkaConsumer[String, EventTest](props)
-
+    new FlinkKafkaConsumer(topic,
+      new JSONKeyValueDeserializationSchema(true),
+      props)
     // POJO
 
 //    new KafkaConsumer[EventTest, ](topic, new DeserializationSchema[EventTest] {

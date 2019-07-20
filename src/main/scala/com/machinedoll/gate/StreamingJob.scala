@@ -18,7 +18,7 @@
 
 package com.machinedoll.gate
 
-import com.machinedoll.gate.source.GenericSource
+import com.machinedoll.gate.source.SourceCollection
 import com.typesafe.config.ConfigFactory
 import org.apache.flink.streaming.api.scala._
 
@@ -40,7 +40,7 @@ object StreamingJob {
     val config = ConfigFactory.parseResources("connection.conf")
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
-    val exampleSource = GenericSource.getKafkaSource(config, "test")
+    val exampleSource = SourceCollection.getKafkaJsonSourceTest(config, "test")
     env.socketTextStream("127.0.0.1", 9999).print()
     env.execute()
   }

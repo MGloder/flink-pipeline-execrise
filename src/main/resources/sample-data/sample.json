@@ -1,0 +1,15 @@
+[{
+  "id": 1,
+  "first_name": "John",
+  "last_name": "Lindt",
+  "email": "jlindt@gmail.com",
+  "gender": "Male",
+  "ip_address": "1.2.3.4"
+},{
+  "id": 2,
+  "first_name": "John",
+  "last_name": "Lindt",
+  "email": "jlindt@gmail.com",
+  "gender": "Male",
+  "ip_address": "1.2.3.4"
+}]
