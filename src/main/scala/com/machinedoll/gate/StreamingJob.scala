@@ -18,10 +18,15 @@
 
 package com.machinedoll.gate
 
+import com.google.gson.Gson
 import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
-import com.machinedoll.gate.source.SourceCollection
+import com.machinedoll.gate.schema.EventTest
+import com.machinedoll.gate.sink.SinkCollection
 import com.typesafe.config.ConfigFactory
+import org.apache.flink.api.common.functions.FlatMapFunction
 import org.apache.flink.streaming.api.scala._
+import org.apache.flink.util.Collector
+
 
 /**
  * Skeleton for a Flink Streaming Job.
@@ -44,9 +49,23 @@ object StreamingJob {
 //    val exampleSource = SourceCollection.getKafkaJsonSourceTest(config, "test")
 //    env.socketTextStream("127.0.0.1", 9999).print()
 
-    env.addSource(new SimpleSequenceObjectGenerator(100)).print()
+    val randomEvent = env.addSource(new SimpleSequenceObjectGenerator(100))
+
+    randomEvent
+      .flatMap(new CustomJsonConverter[EventTest]())
+      .addSink(SinkCollection.getKafkaJsonSinkTest(config, "event_test_topic"))
+
     env.execute()
   }
 }
+
+class CustomJsonConverter[EventTest]() extends FlatMapFunction[EventTest, String] {
+  override def flatMap(t: EventTest, collector: Collector[String]): Unit = {
+    val gson = new Gson
+    val evnetTest: String = gson.toJson(t)
+    collector.collect(evnetTest)
+  }
+}
+
 
 

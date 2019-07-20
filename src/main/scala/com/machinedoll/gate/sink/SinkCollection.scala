@@ -3,9 +3,11 @@ package com.machinedoll.gate.sink
 import java.util.Properties
 
 import com.typesafe.config.Config
+import org.apache.flink.api.common.serialization.SimpleStringSchema
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer
 
 object SinkCollection {
-  def getKafkaJsonSinkTest(config: Config, topic: String): Unit = {
+  def getKafkaJsonSinkTest(config: Config, topic: String): FlinkKafkaProducer[String] = {
 
 //    public FlinkKafkaProducer (topicId: String, serializationSchema: SerializationSchema[IN], producerConfig: Properties) {
 
@@ -17,10 +19,11 @@ object SinkCollection {
     props.setProperty("group.id",
       config.getString("kafka.group.id"))
 
-//    val sink = new FlinkKafkaProducer[EventTest](
-//      topic, JsonSerializableSchema
-//    )
-
+    new FlinkKafkaProducer[String](
+      topic,
+      new SimpleStringSchema(),
+      props
+    )
 
     // versions 0.10+ allow attaching the records' event timestamp when writing them to Kafka;
     // this method is not available for earlier Kafka versions
