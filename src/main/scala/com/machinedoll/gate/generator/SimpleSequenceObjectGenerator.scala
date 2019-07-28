@@ -8,7 +8,7 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceCont
 
 import scala.util.Random
 
-class SimpleSequenceObjectGenerator(interval: Long) extends RichParallelSourceFunction[EventTest] {
+class SimpleSequenceObjectGenerator(interval: Long, numEvent: Int, numDes: Int) extends RichParallelSourceFunction[EventTest] {
 
   var running: Boolean = true
 
@@ -16,18 +16,18 @@ class SimpleSequenceObjectGenerator(interval: Long) extends RichParallelSourceFu
     val rand = new Random()
 
     val taskId = this.getRuntimeContext.getIndexOfThisSubtask
-    val descriptionList: List[DescriptionExample] = (1 to 1000).toList.map {
+    val descriptionList: List[DescriptionExample] = (0 to numDes).toList.map {
       d =>
-        new DescriptionExample(rand.nextInt(), "This is a description msg for {} with ".formatted(d.toString))
+        new DescriptionExample(d, "This is a description msg for {} with ".formatted(d.toString))
     }
 
     while (running) {
       val curTime = Calendar.getInstance.getTimeInMillis
-      val sourceList = (1 to rand.nextInt(100)).map {
+      val sourceList = (0 to rand.nextInt(numEvent)).map {
         i =>
           sourceContext
             .collect(
-              new EventTest(i, curTime, descriptionList(rand.nextInt(100)))
+              new EventTest(i, curTime, descriptionList(rand.nextInt(numDes)))
             )
       }
       Thread.sleep(interval)

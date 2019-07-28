@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.machinedoll.gate
+package com.machinedoll.gate.test.join
 
 import com.google.gson.Gson
 import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
@@ -40,20 +40,25 @@ import org.apache.flink.util.Collector
  * If you change the name of the main class (with the public static void main(String[] args))
  * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
  */
-object StreamingJob {
+object TwoStream {
   def main(args: Array[String]): Unit = {
 
     val config = ConfigFactory.parseResources("connection.conf")
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
+    // set parallelism
+    env.setParallelism(1)
+
+    println("Current parallelism: [ " + env.getParallelism + " ]")
+
 //    val exampleSource = SourceCollection.getKafkaJsonSourceTest(config, "test")
 //    env.socketTextStream("127.0.0.1", 9999).print()
 
-//    val randomEvent = env.addSource(new SimpleSequenceObjectGenerator(100, 1000, 1000))
-//
-//    randomEvent
-//      .flatMap(new CustomJsonConverter[EventTest]())
-//      .addSink(SinkCollection.getKafkaJsonSinkTest(config, "event_test_topic"))
+    val randomEvent = env.addSource(new SimpleSequenceObjectGenerator(1000, 1, numDes = 10))
+
+    randomEvent
+      .flatMap(new CustomJsonConverter[EventTest]())
+      .print()
 
     env.execute()
   }
