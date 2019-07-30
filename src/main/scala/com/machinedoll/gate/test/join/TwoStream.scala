@@ -23,8 +23,14 @@ import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
 import com.machinedoll.gate.schema.EventTest
 import com.machinedoll.gate.sink.SinkCollection
 import com.typesafe.config.ConfigFactory
-import org.apache.flink.api.common.functions.FlatMapFunction
+import org.apache.flink.api.common.functions.{FlatMapFunction, RuntimeContext}
+import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, AssignerWithPunctuatedWatermarks, KeyedProcessFunction, ProcessFunction}
 import org.apache.flink.streaming.api.scala._
+import org.apache.flink.streaming.api.scala.function.{ProcessWindowFunction, WindowFunction}
+import org.apache.flink.streaming.api.watermark.Watermark
+import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.util.Collector
 
 
@@ -46,6 +52,8 @@ object TwoStream {
     val config = ConfigFactory.parseResources("connection.conf")
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
     // set parallelism
     env.setParallelism(1)
 
@@ -54,10 +62,14 @@ object TwoStream {
 //    val exampleSource = SourceCollection.getKafkaJsonSourceTest(config, "test")
 //    env.socketTextStream("127.0.0.1", 9999).print()
 
-    val randomEvent = env.addSource(new SimpleSequenceObjectGenerator(1000, 1, numDes = 10))
+    val randomEvent: DataStream[EventTest] = env
+      .addSource(new SimpleSequenceObjectGenerator(1000, 10, numDes = 10))
+//      .assignTimestampsAndWatermarks(new PeriodicWaterarkExample)
 
     randomEvent
-      .flatMap(new CustomJsonConverter[EventTest]())
+      .assignTimestampsAndWatermarks(new PeriodicWaterarkExample)
+      .keyBy(_.id)
+      .process(new KeyedProcessFunctionExample)
       .print()
 
     env.execute()
@@ -72,5 +84,60 @@ class CustomJsonConverter[EventTest]() extends FlatMapFunction[EventTest, String
   }
 }
 
+class PeriodicWaterarkExample extends AssignerWithPeriodicWatermarks[EventTest] {
+  val bound: Long = 1000 * 60 // 1 minus
+
+  var maxWs: Long = Long.MinValue
+
+  override def getCurrentWatermark: Watermark = {
+    new Watermark(maxWs - bound)
+  }
+
+  override def extractTimestamp(t: EventTest, l: Long): Long = {
+    maxWs = maxWs.max(t.timestamp)
+    t.timestamp
+  }
+}
+
+class PunctuatedWatermarkExample extends AssignerWithPunctuatedWatermarks[EventTest] {
+  override def checkAndGetNextWatermark(t: EventTest, l: Long): Watermark = ???
+
+  override def extractTimestamp(t: EventTest, l: Long): Long = ???
+}
+
+case class CustomResult(id: Int, num: Int, lastModified: Long) extends Serializable
+case class CustomResultMap(id: Int, num: Int) extends Serializable
+
+class KeyedProcessFunctionExample extends KeyedProcessFunction[Int, EventTest, CustomResult] {
+
+  lazy val state: ValueState[CustomResult] = getRuntimeContext
+    .getState(new ValueStateDescriptor[CustomResult]("myState", classOf[CustomResult]))
+
+  override def processElement(i: EventTest,
+                              context: KeyedProcessFunction[Int, EventTest, CustomResult]#Context,
+                              collector: Collector[CustomResult]): Unit = {
+
+    val count: CustomResult = state.value match {
+      case null => CustomResult(i.id, 1, context.timestamp())
+      case CustomResult(key, count, modified) => CustomResult(i.id, count + 1, context.timestamp())
+    }
+
+    state.update(count)
+
+    context.timerService().registerEventTimeTimer(count.lastModified + 6000)
+  }
+
+
+
+
+  override def onTimer(timestamp: Long,
+                       ctx: KeyedProcessFunction[Int, EventTest, CustomResult]#OnTimerContext,
+                       out: Collector[CustomResult]): Unit = {
+    state.value match {
+      case CustomResult(key, count, lastModified) if (timestamp == lastModified + 6000)  => out.collect(CustomResult(key, count, lastModified))
+      case _ =>
+    }
+  }
+}
 
 
