@@ -21,3 +21,8 @@ kubectl get pod
 ```
 ______________
 reference: [flink-docs](https://ci.apache.org/projects/flink/flink-docs-release-1.8/ops/deployment/kubernetes.html#session-cluster-resource-definitions)
+
+
+## Watermark
+
+![watermark](./src/resources/watermark.png)
