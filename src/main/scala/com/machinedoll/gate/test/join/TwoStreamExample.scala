@@ -21,31 +21,15 @@ package com.machinedoll.gate.test.join
 import com.google.gson.Gson
 import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
 import com.machinedoll.gate.schema.EventTest
-import com.machinedoll.gate.sink.SinkCollection
 import com.typesafe.config.ConfigFactory
-import org.apache.flink.api.common.functions.{FlatMapFunction, RuntimeContext}
+import org.apache.flink.api.common.functions.FlatMapFunction
 import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, AssignerWithPunctuatedWatermarks, KeyedProcessFunction, ProcessFunction}
+import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, AssignerWithPunctuatedWatermarks, KeyedProcessFunction}
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.scala.function.{ProcessWindowFunction, WindowFunction}
 import org.apache.flink.streaming.api.watermark.Watermark
-import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.util.Collector
 
-
-/**
- * Skeleton for a Flink Streaming Job.
- *
- * For a tutorial how to write a Flink streaming application, check the
- * tutorials and examples on the <a href="http://flink.apache.org/docs/stable/">Flink Website</a>.
- *
- * To package your application into a JAR file for execution, run
- * 'mvn clean package' on the command line.
- *
- * If you change the name of the main class (with the public static void main(String[] args))
- * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
- */
 object TwoStream {
   def main(args: Array[String]): Unit = {
 
@@ -59,18 +43,18 @@ object TwoStream {
 
     println("Current parallelism: [ " + env.getParallelism + " ]")
 
-//    val exampleSource = SourceCollection.getKafkaJsonSourceTest(config, "test")
-//    env.socketTextStream("127.0.0.1", 9999).print()
-
     val randomEvent: DataStream[EventTest] = env
       .addSource(new SimpleSequenceObjectGenerator(1000, 10, numDes = 10))
 //      .assignTimestampsAndWatermarks(new PeriodicWaterarkExample)
 
-    randomEvent
-      .assignTimestampsAndWatermarks(new PeriodicWaterarkExample)
+    val keyByEvent = randomEvent
+//      .assignTimestampsAndWatermarks(new PeriodicWaterarkExample)
       .keyBy(_.id)
-      .process(new KeyedProcessFunctionExample)
-      .print()
+
+//    keyByEvent.print()
+
+    val processedKeyByEvent = keyByEvent.process(new KeyedProcessFunctionExample)
+    processedKeyByEvent.print()
 
     env.execute()
   }
@@ -105,36 +89,36 @@ class PunctuatedWatermarkExample extends AssignerWithPunctuatedWatermarks[EventT
   override def extractTimestamp(t: EventTest, l: Long): Long = ???
 }
 
-case class CustomResult(id: Int, num: Int, lastModified: Long) extends Serializable
-case class CustomResultMap(id: Int, num: Int) extends Serializable
+case class CountWithTimestamp(id: Int, count: Int, lastModified: Long)
+case class CountResult(id: Int, num: Int)
 
-class KeyedProcessFunctionExample extends KeyedProcessFunction[Int, EventTest, CustomResult] {
+class KeyedProcessFunctionExample extends  KeyedProcessFunction[Int, EventTest, CountResult] {
 
-  lazy val state: ValueState[CustomResult] = getRuntimeContext
-    .getState(new ValueStateDescriptor[CustomResult]("myState", classOf[CustomResult]))
+  lazy val state: ValueState[CountWithTimestamp] = getRuntimeContext
+    .getState(new ValueStateDescriptor[CountWithTimestamp]("myState", classOf[CountWithTimestamp]))
 
-  override def processElement(i: EventTest,
-                              context: KeyedProcessFunction[Int, EventTest, CustomResult]#Context,
-                              collector: Collector[CustomResult]): Unit = {
-
-    val count: CustomResult = state.value match {
-      case null => CustomResult(i.id, 1, context.timestamp())
-      case CustomResult(key, count, modified) => CustomResult(i.id, count + 1, context.timestamp())
+  override def processElement(value: EventTest,
+                              ctx: KeyedProcessFunction[Int, EventTest, CountResult]#Context,
+                              out: Collector[CountResult]): Unit = {
+    println(value)
+    val current: CountWithTimestamp = state.value match {
+      case null => CountWithTimestamp(value.id, 1, ctx.timestamp)
+      case CountWithTimestamp(id, count, lastModified) => CountWithTimestamp(id, count + 1, ctx.timestamp())
     }
 
-    state.update(count)
 
-    context.timerService().registerEventTimeTimer(count.lastModified + 6000)
+    state.update(current)
+
+    ctx.timerService.registerEventTimeTimer(current.lastModified + 60000)
   }
 
-
-
-
   override def onTimer(timestamp: Long,
-                       ctx: KeyedProcessFunction[Int, EventTest, CustomResult]#OnTimerContext,
-                       out: Collector[CustomResult]): Unit = {
+                       ctx: KeyedProcessFunction[Int, EventTest, CountResult]#OnTimerContext,
+                       out: Collector[CountResult]): Unit = {
+
     state.value match {
-      case CustomResult(key, count, lastModified) if (timestamp == lastModified + 6000)  => out.collect(CustomResult(key, count, lastModified))
+      case CountWithTimestamp(id, count, lastModified) if (timestamp == lastModified + 60000) =>
+        out.collect(CountResult(id, count))
       case _ =>
     }
   }
