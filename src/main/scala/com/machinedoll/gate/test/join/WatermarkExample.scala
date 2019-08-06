@@ -6,9 +6,12 @@ import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.typeutils.Types
 import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction
 import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, KeyedProcessFunction, ProcessFunction}
 import org.apache.flink.streaming.api.scala.{DataStream, OutputTag, StreamExecutionEnvironment}
 import org.apache.flink.streaming.api.watermark.Watermark
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows
+import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.util.Collector
 
 object WatermarkExample {
@@ -23,19 +26,21 @@ object WatermarkExample {
     val readings = env
       .addSource(new SimpleSensorReadingGenerator)
       .assignTimestampsAndWatermarks(new WatermarkAssigner())
-//      .keyBy(_.id)
+      .keyBy(_.id)
+      .window(TumblingEventTimeWindows.of(Time.seconds(10), Time.seconds(1)))
+      .process(new ProcessWindowFunctionExample())
 //      .process(new ExampleProcessFunction)
-    val monitoredReading: DataStream[SensorReading] = readings
+//    val monitoredReading: DataStream[SensorReading] = readings
 //        .keyBy(_.id)
 //        .process(new ExampleProcessFunction)
-        .process(new FreezingMonitor)
+//        .process(new FreezingMonitor)
 
-    monitoredReading
-      .getSideOutput(new OutputTag[String]("freezing-alarms"))
-      .print()
-
-    readings
-      .keyBy(_.id)
+//    monitoredReading
+//      .getSideOutput(new OutputTag[String]("freezing-alarms"))
+//      .print()
+//
+//    readings
+//      .keyBy(_.id)
       .print()
 
     env.execute("Watermark Example")
@@ -105,3 +110,7 @@ class FreezingMonitor() extends ProcessFunction[SensorReading, SensorReading] {
     out.collect(value)
   }
 }
+
+//class ProcessWindowFunctionExample() extends ProcessWindowFunction[] {
+//
+//}
