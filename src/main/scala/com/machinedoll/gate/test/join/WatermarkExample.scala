@@ -21,8 +21,9 @@ object WatermarkExample {
     val sourceWithWatermark = env
       .addSource(new SimpleSensorReadingGenerator)
       .assignTimestampsAndWatermarks(new WatermarkAssigner())
-      .keyBy(_.id)
-      .process(new ExampleProcessFunction)
+//      .keyBy(_.id)
+//      .process(new ExampleProcessFunction)
+
 
 
     sourceWithWatermark.print()
@@ -36,7 +37,6 @@ class WatermarkAssigner() extends AssignerWithPeriodicWatermarks[SensorReading]{
   var maxTs: Long = Long.MinValue
 
   override def getCurrentWatermark: Watermark = {
-    println("Generating water mark for " + maxTs)
     new Watermark(maxTs - bound)
   }
 

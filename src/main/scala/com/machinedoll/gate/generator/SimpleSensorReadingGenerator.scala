@@ -11,7 +11,7 @@ import scala.util.Random
 class SimpleSensorReadingGenerator extends RichParallelSourceFunction[SensorReading] {
   var running: Boolean = true
 
-  val maxItem = 100
+  val maxItem = 10
   val scaler = 100
 
   override def run(sourceContext: SourceContext[SensorReading]): Unit = {
