@@ -6,8 +6,8 @@ import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.typeutils.Types
 import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, KeyedProcessFunction}
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, KeyedProcessFunction, ProcessFunction}
+import org.apache.flink.streaming.api.scala.{DataStream, OutputTag, StreamExecutionEnvironment}
 import org.apache.flink.streaming.api.watermark.Watermark
 import org.apache.flink.util.Collector
 
@@ -20,15 +20,23 @@ object WatermarkExample {
     // change 200 milliseconds to 5000 millisecond
 //    env.getConfig.setAutoWatermarkInterval(5000)
 
-    val sourceWithWatermark = env
+    val readings = env
       .addSource(new SimpleSensorReadingGenerator)
       .assignTimestampsAndWatermarks(new WatermarkAssigner())
+//      .keyBy(_.id)
+//      .process(new ExampleProcessFunction)
+    val monitoredReading: DataStream[SensorReading] = readings
+//        .keyBy(_.id)
+//        .process(new ExampleProcessFunction)
+        .process(new FreezingMonitor)
+
+    monitoredReading
+      .getSideOutput(new OutputTag[String]("freezing-alarms"))
+      .print()
+
+    readings
       .keyBy(_.id)
-      .process(new ExampleProcessFunction)
-
-
-
-    sourceWithWatermark.print()
+      .print()
 
     env.execute("Watermark Example")
   }
@@ -80,5 +88,20 @@ class ExampleProcessFunction() extends KeyedProcessFunction[String, SensorReadin
                        out: Collector[String]): Unit = {
     out.collect("Temperature of sensor " + ctx.getCurrentKey + " monotonically increased for 1 second")
     currentTimer.clear()
+  }
+}
+
+class FreezingMonitor() extends ProcessFunction[SensorReading, SensorReading] {
+
+  lazy val freezingAlarmOutput: OutputTag[String] = new OutputTag[String]("freezing-alarms")
+
+  override def processElement(value: SensorReading,
+                              ctx: ProcessFunction[SensorReading, SensorReading]#Context,
+                              out: Collector[SensorReading]): Unit = {
+    if (value.reading < 32.0) {
+      ctx.output(freezingAlarmOutput, s"Freezing Alarm for ${value.id}")
+    }
+
+    out.collect(value)
   }
 }
