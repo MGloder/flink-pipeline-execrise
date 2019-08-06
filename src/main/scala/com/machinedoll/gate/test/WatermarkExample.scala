@@ -1,4 +1,4 @@
-package com.machinedoll.gate.test.join
+package com.machinedoll.gate.test
 
 import com.machinedoll.gate.generator.SimpleSensorReadingGenerator
 import com.machinedoll.gate.schema.SensorReading

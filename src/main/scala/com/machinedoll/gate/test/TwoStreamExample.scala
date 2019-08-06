@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.machinedoll.gate.test.join
+package com.machinedoll.gate.test
 
 import com.google.gson.Gson
 import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
