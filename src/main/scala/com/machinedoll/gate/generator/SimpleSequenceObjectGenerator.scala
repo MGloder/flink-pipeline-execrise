@@ -8,7 +8,7 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceCont
 
 import scala.util.Random
 
-class SimpleSequenceObjectGenerator(interval: Long, numEvent: Int, numDes: Int) extends RichParallelSourceFunction[EventTest] {
+class SimpleSequenceObjectGenerator(interval: Long, numEvent: Int, rNumDes: Int, rNumEvent: Int) extends RichParallelSourceFunction[EventTest] {
 
   var running: Boolean = true
 
@@ -16,7 +16,7 @@ class SimpleSequenceObjectGenerator(interval: Long, numEvent: Int, numDes: Int) 
     val rand = new Random()
 
     val taskId = this.getRuntimeContext.getIndexOfThisSubtask
-    val descriptionList: List[DescriptionExample] = (0 to numDes).toList.map {
+    val descriptionList: List[DescriptionExample] = (0 to rNumDes).toList.map {
       d =>
         new DescriptionExample(d, "This is a description msg for {} with ".formatted(d.toString))
     }
@@ -26,12 +26,12 @@ class SimpleSequenceObjectGenerator(interval: Long, numEvent: Int, numDes: Int) 
     while (running) {
       val curTime = Calendar.getInstance.getTimeInMillis
       val sourceList = (0 to rand.nextInt(numEvent)).foreach{
-        i => sourceContext.collect(EventTest(i, curTime, descriptionList(rand.nextInt(numDes))))
+        i => sourceContext.collect(EventTest(rand.nextInt(rNumEvent), curTime, 1, descriptionList(rand.nextInt(rNumDes))))
       }
 
-      Thread.sleep(3000)
-
-      sourceContext.collect(EventTest(0, curTime - 61 * 1000, new DescriptionExample(0, "Special Event")))
+//      Thread.sleep(3000)
+//
+//      sourceContext.collect(EventTest(0, curTime - 61 * 1000, 1, new DescriptionExample(0, "Special Event")))
 
       Thread.sleep(interval)
     }

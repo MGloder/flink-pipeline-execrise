@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.machinedoll.gate.test.join
+package com.machinedoll.gate.test
 
 import com.google.gson.Gson
 import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
@@ -43,18 +43,18 @@ object TwoStream {
 
     println("Current parallelism: [ " + env.getParallelism + " ]")
 
-    val randomEvent: DataStream[EventTest] = env
-      .addSource(new SimpleSequenceObjectGenerator(1000, 10, numDes = 10))
+//    val randomEvent: DataStream[EventTest] = env
+//      .addSource(new SimpleSequenceObjectGenerator(1000, 10,))
 //      .assignTimestampsAndWatermarks(new PeriodicWaterarkExample)
 
-    val keyByEvent = randomEvent
+//    val keyByEvent = randomEvent
 //      .assignTimestampsAndWatermarks(new PeriodicWaterarkExample)
-      .keyBy(_.id)
+//      .keyBy(_.id)
 
 //    keyByEvent.print()
 
-    val processedKeyByEvent = keyByEvent.process(new KeyedProcessFunctionExample)
-    processedKeyByEvent.print()
+//    val processedKeyByEvent = keyByEvent.process(new KeyedProcessFunctionExample)
+//    processedKeyByEvent.print()
 
     env.execute()
   }
@@ -102,8 +102,8 @@ class KeyedProcessFunctionExample extends  KeyedProcessFunction[Int, EventTest, 
                               out: Collector[CountResult]): Unit = {
     println(value)
     val current: CountWithTimestamp = state.value match {
-      case null => CountWithTimestamp(value.id, 1, ctx.timestamp)
-      case CountWithTimestamp(id, count, lastModified) => CountWithTimestamp(id, count + 1, ctx.timestamp())
+      case null => new CountWithTimestamp(value.id, 1, ctx.timestamp)
+      case CountWithTimestamp(id, count, lastModified) => new CountWithTimestamp(id, count + 1, ctx.timestamp())
     }
 
 

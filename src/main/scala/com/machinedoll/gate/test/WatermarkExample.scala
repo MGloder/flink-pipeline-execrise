@@ -1,4 +1,4 @@
-package com.machinedoll.gate.test.join
+package com.machinedoll.gate.test
 
 import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
 import com.machinedoll.gate.schema.EventTest
@@ -17,11 +17,13 @@ object WatermarkExample {
     env.getConfig.setAutoWatermarkInterval(3000)
 
     val sourceWithWatermark = env
-      .addSource(new SimpleSequenceObjectGenerator(2000, 1, 1))
+      .addSource(new SimpleSequenceObjectGenerator(2000, 1, 1, 1))
       .assignTimestampsAndWatermarks(new WatermarkAssigner())
 
 
-    sourceWithWatermark.print()
+
+//    sourceWithWatermark.getSideOutput().print()
+//    sourceWithWatermark.print()
 
     env.execute("Watermark Example")
   }
