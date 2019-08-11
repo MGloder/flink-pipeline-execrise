@@ -27,8 +27,8 @@ object WatermarkExample {
       .addSource(new SimpleSensorReadingGenerator)
       .assignTimestampsAndWatermarks(new WatermarkAssigner())
       .keyBy(_.id)
-      .window(TumblingEventTimeWindows.of(Time.seconds(10), Time.seconds(1)))
-      .process(new ProcessWindowFunctionExample())
+//      .window(TumblingEventTimeWindows.of(Time.seconds(10), Time.seconds(1)))
+//      .process(new ProcessWindowFunctionExample())
 //      .process(new ExampleProcessFunction)
 //    val monitoredReading: DataStream[SensorReading] = readings
 //        .keyBy(_.id)
