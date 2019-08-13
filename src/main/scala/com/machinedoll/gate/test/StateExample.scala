@@ -10,6 +10,7 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
 import org.apache.flink.api.scala._
 import org.apache.flink.configuration.Configuration
+import org.apache.flink.runtime.state.CheckpointListener
 import org.apache.flink.streaming.api.checkpoint.ListCheckpointed
 import org.apache.flink.util.Collector
 
@@ -18,6 +19,7 @@ object StateExample {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+    env.enableCheckpointing(3000)
 
     val sensorData = env.addSource(new SimpleSensorReadingGenerator())
 
@@ -39,6 +41,8 @@ object StateExample {
 //      }
 //    }
       .flatMap(new TemperatureAlertFunction(10f))
+      .uid("Example UID")
+//      .flatMap(new ExampleListener())
       .print()
 
     env.execute("State Example")
@@ -71,29 +75,39 @@ class TemperatureAlertFunction(threshold: Float) extends RichFlatMapFunction[Sen
     this.lastTempState.update(in.reading)
   }
 }
-class HighTemperatureCounter(threshold: Float)
-  extends RichFlatMapFunction[SensorReading, (Int, Long)]
-    with ListCheckpointed[java.lang.Long] {
+//class HighTemperatureCounter(threshold: Float)
+//  extends RichFlatMapFunction[SensorReading, (Int, Long)]
+//    with ListCheckpointed[java.lang.Long] {
+//
+//  private lazy val subtaskIdx = getRuntimeContext.getIndexOfThisSubtask
+//
+//  private var highCount = 0L
+//
+//  override def flatMap(value: SensorReading, out: Collector[(Int, Long)]): Unit = {
+//    if (value.reading > threshold) {
+//      highCount += 1
+//      out.collect((subtaskIdx, highCount))
+//    }
+//  }
+//
+//  override def snapshotState(checkpointId: Long, timestamp: Long): util.List[lang.Long] = {
+//    java.util.Collections.singletonList(highCount)
+//  }
+//
+//  override def restoreState(state: util.List[java.lang.Long]): Unit = {
+//    highCount = 0
+//    for (cnt <- state) {
+//      highCount += cnt
+//    }
+//  }
+//}
 
-  private lazy val subtaskIdx = getRuntimeContext.getIndexOfThisSubtask
-
-  private var highCount = 0L
-
-  override def flatMap(value: SensorReading, out: Collector[(Int, Long)]): Unit = {
-    if (value.reading > threshold) {
-      highCount += 1
-      out.collect((subtaskIdx, highCount))
-    }
-  }
-
-  override def snapshotState(checkpointId: Long, timestamp: Long): util.List[lang.Long] = {
-    java.util.Collections.singletonList(highCount)
-  }
-
-  override def restoreState(state: util.List[lang.Long]): Unit = {
-    highCount = 0
-    for (cnt <- state) {
-      highCount += cnt
-    }
-  }
-}
+//class ExampleListener extends RichFlatMapFunction[SensorReading, (Int, Long)] with CheckpointListener {
+//  override def flatMap(value: SensorReading, out: Collector[(Int, Long)]): Unit = {
+//    out.collect((value.id.toInt, value.reading.toLong))
+//  }
+//
+//  override def notifyCheckpointComplete(l: Long): Unit = {
+//    println("checkpoint completed" + l)
+//  }
+//}
