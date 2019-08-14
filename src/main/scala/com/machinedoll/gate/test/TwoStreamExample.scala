@@ -24,6 +24,7 @@ import com.machinedoll.gate.schema.EventTest
 import com.typesafe.config.ConfigFactory
 import org.apache.flink.api.common.functions.FlatMapFunction
 import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
+import org.apache.flink.contrib.streaming.state.RocksDBStateBackend
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, AssignerWithPunctuatedWatermarks, KeyedProcessFunction}
 import org.apache.flink.streaming.api.scala._
@@ -35,9 +36,10 @@ object TwoStream {
 
     val config = ConfigFactory.parseResources("connection.conf")
     val env = StreamExecutionEnvironment.getExecutionEnvironment
-
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-
+    val rocksDBStateBackend = new RocksDBStateBackend("file:///Users/xyan/tmp/data")
+    env.setStateBackend(rocksDBStateBackend.getCheckpointBackend)
+    env.enableCheckpointing(100)
     // set parallelism
     env.setParallelism(1)
 
@@ -50,11 +52,12 @@ object TwoStream {
     val keyByEvent = randomEvent
 //      .assignTimestampsAndWatermarks(new PeriodicWaterarkExample)
       .keyBy(_.id)
+      .print()
 
 //    keyByEvent.print()
 
-    val processedKeyByEvent = keyByEvent.process(new KeyedProcessFunctionExample)
-    processedKeyByEvent.print()
+//    val processedKeyByEvent = keyByEvent.process(new KeyedProcessFunctionExample)
+//    processedKeyByEvent.print()
 
     env.execute()
   }
