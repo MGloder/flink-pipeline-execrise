@@ -11,6 +11,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="scala-sdk-2.11.12" level="application" />
+    <orderEntry type="library" name="Maven: org.apache.flink:flink-statebackend-rocksdb_2.11:1.8.0" level="project" />
+    <orderEntry type="library" name="Maven: com.data-artisans:frocksdbjni:5.17.2-artisans-1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-scala_2.11:1.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-java:1.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-math3:3.5" level="project" />
@@ -59,13 +61,13 @@
     <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.18" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-queryable-state-runtime_2.11:1.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.12" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.flink:flink-statebackend-rocksdb_2.11:1.8.0" level="project" />
+    <orderEntry type="library" name="Maven: com.data-artisans:frocksdbjni:5.17.2-artisans-1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-connector-kafka_2.11:1.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-connector-kafka-base_2.11:1.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.kafka:kafka-clients:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.lz4:lz4-java:1.4.1" level="project" />
     <orderEntry type="library" name="Maven: org.xerial.snappy:snappy-java:1.1.7.1" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.flink:flink-statebackend-rocksdb_2.11:1.8.0" level="project" />
-    <orderEntry type="library" name="Maven: com.data-artisans:frocksdbjni:5.17.2-artisans-1.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.slf4j:slf4j-log4j12:1.7.7" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: log4j:log4j:1.2.17" level="project" />
