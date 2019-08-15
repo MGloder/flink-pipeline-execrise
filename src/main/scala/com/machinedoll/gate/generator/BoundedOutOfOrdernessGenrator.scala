@@ -1,5 +1,6 @@
 package com.machinedoll.gate.generator
 
+import com.machinedoll.gate.schema.ExampleEvent
 import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks
 import org.apache.flink.streaming.api.watermark.Watermark
 
@@ -21,4 +22,4 @@ class BoundedOutOfOrdernessGenrator extends AssignerWithPeriodicWatermarks[Examp
 
 }
 
-case class ExampleEvent(id:Int, timestamp: Long)
+
