@@ -13,16 +13,16 @@ class ResettableCustomSource extends SourceFunction[EventTest] with Checkpointed
   var cnt: Long = _
   var event: EventTest = _
   var offsetState: ListState[EventTest] = _
-  val calenderInstance = Calendar.getInstance()
+  private val currentTime = Calendar.getInstance()
 
   override def run(ctx: SourceFunction.SourceContext[EventTest]): Unit =
     while (isRunning && cnt < Long.MaxValue) {
       ctx.getCheckpointLock.synchronized{
         cnt += 1
         event = new EventTest(id = cnt.toInt,
-          timestamp = calenderInstance.getTimeInMillis,
-          description = new DescriptionExample(0, "0"))
-        ctx.collect(event)
+          timestamp = currentTime.getTimeInMillis,
+          description = DescriptionExample(0, "0"))
+        ctx.collectWithTimestamp(event, currentTime.getTimeInMillis)
       }
     }
 
@@ -39,9 +39,9 @@ class ResettableCustomSource extends SourceFunction[EventTest] with Checkpointed
 
     val it = offsetState.get()
     event = if (null == it || !it.iterator().hasNext) {
-      new EventTest(-1,
-        calenderInstance.getTimeInMillis,
-        new DescriptionExample(-1, "-1"))
+      EventTest(-1,
+        currentTime.getTimeInMillis,
+        DescriptionExample(-1, "-1"))
     } else {
       it.iterator().next()
     }
