@@ -1,10 +1,12 @@
 package com.machinedoll.gate.sink
 
-import java.util.Properties
+import java.util.{Optional, Properties}
 
+import com.machinedoll.gate.partitioner.KafkaCustomPartitioner
 import com.typesafe.config.Config
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer
+import org.apache.flink.streaming.connectors.kafka.partitioner.FlinkKafkaPartitioner
 
 object SinkCollection {
   def getKafkaStringSinkTest(config: Config, topic: String): FlinkKafkaProducer[String] = {
@@ -36,7 +38,9 @@ object SinkCollection {
     props.setProperty("group.id",
       config.getString("kafka.group.id"))
 
-    new FlinkKafkaProducer(topic, new SimpleStringSchema(), props)
+    val customKafkaPartitioner : Optional[FlinkKafkaPartitioner[String]] =
+      Optional.of(new KafkaCustomPartitioner())
+    new FlinkKafkaProducer(topic, new SimpleStringSchema(), props, customKafkaPartitioner)
   }
 
 
