@@ -21,7 +21,9 @@ object CustomKafkaPartitionerExample {
     val eventTestSource = env
       .addSource(new SimpleSequenceStringGenerator(1000, 100))
 
-    eventTestSource.addSink(SinkCollection.getKafkaStringSinkTest(conf, "event-test"))
+    eventTestSource.print()
+    val result = eventTestSource.addSink(SinkCollection.getKafkaStringSinkTest(conf, "event-test"))
+
     env.execute("Custom Kafka Partitioner Example")
   }
 }

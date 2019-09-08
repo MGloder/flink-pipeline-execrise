@@ -27,7 +27,7 @@ object SinkCollection {
     // this method is not available for earlier Kafka versions
   }
 
-  def getKafkaCustomPartitionSink(config: Config, topic: String) = {
+  def getKafkaCustomPartitionSink(config: Config, topic: String): FlinkKafkaProducer[String] = {
     val props = new Properties()
     props.setProperty("bootstrap.servers",
       config.getString("kafka.kafka-server"))

@@ -30,10 +30,10 @@ object SourceCollection {
     val props = new Properties()
     props.setProperty("bootstrap.servers",
       config.getString("kafka.kafka-server"))
-    props.setProperty("zookeeper.connect",
-      config.getString("kafka.zookeeper-server"))
-    props.setProperty("group.id",
-      config.getString("kafka.group.id"))
+//    props.setProperty("zookeeper.connect",
+//      config.getString("kafka.zookeeper-server"))
+//    props.setProperty("group.id",
+//      config.getString("kafka.group.id"))
 
     new FlinkKafkaConsumer(topic, new SimpleStringSchema(), props)
   }

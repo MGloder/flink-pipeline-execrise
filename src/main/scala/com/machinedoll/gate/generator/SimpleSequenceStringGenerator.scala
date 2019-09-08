@@ -22,7 +22,7 @@ class SimpleSequenceStringGenerator(interval: Long, numEvent: Int) extends RichP
     while (running) {
       val curTime = Calendar.getInstance.getTimeInMillis
       val sourceList = (0 to rand.nextInt(numEvent)).foreach{
-        i => sourceContext.collect(curTime.toString)
+        i => sourceContext.collect((curTime + i) .toString)
       }
       Thread.sleep(interval)
     }
