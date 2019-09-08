@@ -6,7 +6,7 @@ import com.typesafe.config.Config
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer
 
-object SinkCollection {
+object KafkaSimpleSink {
   def getKafkaJsonSinkTest(config: Config, topic: String): FlinkKafkaProducer[String] = {
 
 //    public FlinkKafkaProducer (topicId: String, serializationSchema: SerializationSchema[IN], producerConfig: Properties) {

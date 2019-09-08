@@ -21,7 +21,7 @@ package com.machinedoll.gate
 import com.google.gson.Gson
 import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
 import com.machinedoll.gate.schema.EventTest
-import com.machinedoll.gate.sink.SinkCollection
+import com.machinedoll.gate.sink.KafkaSimpleSink
 import com.typesafe.config.ConfigFactory
 import org.apache.flink.api.common.functions.FlatMapFunction
 import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks
