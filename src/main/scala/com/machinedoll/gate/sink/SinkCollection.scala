@@ -7,7 +7,7 @@ import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer
 
 object SinkCollection {
-  def getKafkaJsonSinkTest(config: Config, topic: String): FlinkKafkaProducer[String] = {
+  def getKafkaStringSinkTest(config: Config, topic: String): FlinkKafkaProducer[String] = {
 
     val props = new Properties()
     props.setProperty("bootstrap.servers",
