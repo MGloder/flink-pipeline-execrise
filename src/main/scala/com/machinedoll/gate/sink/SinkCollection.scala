@@ -5,14 +5,18 @@ import java.lang
 import java.util.{Optional, Properties}
 
 import com.machinedoll.gate.partitioner.KafkaCustomPartitioner
-import com.machinedoll.gate.schema.EventTest
+import com.machinedoll.gate.schema.{EventTest, SensorReading}
 import com.typesafe.config.Config
 import org.apache.flink.api.common.serialization.SimpleStringSchema
-import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaProducer, KafkaSerializationSchema}
 import org.apache.flink.streaming.connectors.kafka.partitioner.FlinkKafkaPartitioner
+import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaProducer, KafkaSerializationSchema}
 import org.apache.kafka.clients.producer.ProducerRecord
 
 object SinkCollection {
+  def getKafkaAvroSink(conf: Config, topic: String): FlinkKafkaProducer[SensorReading] = {
+    ???
+  }
+
 
   def getKafkaStringSinkTest(config: Config, topic: String): FlinkKafkaProducer[String] = {
 
@@ -43,7 +47,7 @@ object SinkCollection {
     props.setProperty("group.id",
       config.getString("kafka.group.id"))
 
-    val customKafkaPartitioner : Optional[FlinkKafkaPartitioner[String]] =
+    val customKafkaPartitioner: Optional[FlinkKafkaPartitioner[String]] =
       Optional.of(new KafkaCustomPartitioner())
     new FlinkKafkaProducer(topic, new SimpleStringSchema(), props, customKafkaPartitioner)
   }
@@ -61,7 +65,7 @@ object SinkCollection {
       val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
       val oos = new ObjectOutputStream(stream)
 
-      override def serialize(element: EventTest, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] ={
+      override def serialize(element: EventTest, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
         oos.writeObject(element)
         oos.close()
         val result = stream.toByteArray

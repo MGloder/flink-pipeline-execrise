@@ -21,7 +21,7 @@ class SimpleSensorReadingGenerator extends RichParallelSourceFunction[SensorRead
 
     while (running) {
       val curTime = Calendar.getInstance.getTimeInMillis
-      val sourceList = (0 to rand.nextInt(maxItem)).foreach{
+      val sourceList = (0 to rand.nextInt(maxItem)).foreach {
         i => sourceContext.collect(SensorReading(i.toString, rand.nextFloat() * scaler, curTime))
       }
 

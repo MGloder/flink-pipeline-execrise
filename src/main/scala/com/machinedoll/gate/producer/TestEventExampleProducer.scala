@@ -1,22 +1,26 @@
 package com.machinedoll.gate.producer
 
-import java.util.Properties
-
-import com.machinedoll.gate.schema.EventTest
-import org.apache.kafka.clients.producer.{Producer, ProducerConfig}
-import org.apache.kafka.common.serialization.StringSerializer
-
+import com.machinedoll.gate.generator.SimpleSensorReadingGenerator
+import com.machinedoll.gate.sink.SinkCollection
+import com.typesafe.config.ConfigFactory
+import org.apache.flink.api.java.utils.ParameterTool
+import org.apache.flink.api.scala._
+import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 
 object TestEventExampleProducer {
-  private def createEventTestProducer: Producer[String, EventTest] = {
-    val props: Properties = new Properties()
-    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-    props.put(ProducerConfig.CLIENT_ID_CONFIG, "AvroProducer")
-    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer].getName)
+  def main(args: Array[String]): Unit = {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
 
-  }
+    val props = ParameterTool.fromArgs(args)
 
-  def main(args: Array[String]) = {
+    val conf = ConfigFactory.load()
 
+    val sensorReading = env
+      .addSource(new SimpleSensorReadingGenerator)
+
+    sensorReading.print()
+
+    sensorReading.addSink(SinkCollection.getKafkaAvroSink(conf, "kafka-avro-example-topic"))
+    env.execute("Producer example")
   }
 }
