@@ -13,8 +13,25 @@ import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaProducer, KafkaSer
 import org.apache.kafka.clients.producer.ProducerRecord
 
 object SinkCollection {
-  def getKafkaAvroSink(conf: Config, topic: String): FlinkKafkaProducer[SensorReading] = {
-    ???
+  def getKafkaAvroSink(config: Config, topic: String): FlinkKafkaProducer[SensorReading] = {
+    val props = new Properties()
+    props.setProperty("bootstrap.servers",
+      config.getString("kafka.kafka-server"))
+    props.setProperty("zookeeper.connect",
+      config.getString("kafka.zookeeper-server"))
+    props.setProperty("group.id",
+      config.getString("kafka.group.id"))
+
+    new FlinkKafkaProducer[SensorReading](topic, new KafkaSerializationSchema[SensorReading] {
+      override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
+        val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
+        val oos = new ObjectOutputStream(stream)
+        oos.writeObject(element)
+        oos.close()
+        val result = stream.toByteArray
+        new ProducerRecord[Array[Byte], Array[Byte]](topic, result)
+      }
+    }, props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)
   }
 
 
