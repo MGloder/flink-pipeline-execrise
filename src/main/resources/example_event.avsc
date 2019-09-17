@@ -1,0 +1,15 @@
+{
+  "namespace": "kakfa-avro.test",
+  "type": "record",
+  "name": "ExampleEvent",
+  "fields": [
+    {
+      "name": "id",
+      "type": "int"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    }
+  ]
+}

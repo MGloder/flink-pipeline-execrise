@@ -39,6 +39,17 @@ under the License.
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>icm</id>
+            <name>icm-repos</name>
+            <url>http://maven.icm.edu.pl/artifactory/repo/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <properties>
@@ -125,6 +136,11 @@ under the License.
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.8.2</version>
         </dependency>
     </dependencies>
 
