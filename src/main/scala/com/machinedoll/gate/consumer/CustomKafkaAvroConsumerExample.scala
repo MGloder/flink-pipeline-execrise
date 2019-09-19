@@ -1,13 +1,12 @@
 package com.machinedoll.gate.consumer
 
+import com.machinedoll.gate.schema.SensorReading
 import com.machinedoll.gate.source.SourceCollection
 import com.typesafe.config.ConfigFactory
 import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 
-import org.apache.flink.streaming.api.scala._
-
-object CustomKafkaConsumerExample {
+object CustomKafkaAvroConsumerExample {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
@@ -16,7 +15,14 @@ object CustomKafkaConsumerExample {
     val conf = ConfigFactory.load()
 
     val sensorReading = env
-      .addSource(SourceCollection.getKafkaSensorReadingSource(conf, "kafka-example-topic"))
+      .addSource(SourceCollection.getKafkaAvroSensorReadingSource(conf, "example-topic2"))
+      .map(
+        g =>
+          new SensorReading(
+            g.get("id").toString,
+            g.get("reading").toString.toFloat,
+            g.get("timestamp").toString.toLong)
+      )
 
     sensorReading.print()
 

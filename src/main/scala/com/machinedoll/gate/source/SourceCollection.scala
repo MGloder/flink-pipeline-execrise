@@ -7,14 +7,11 @@ import java.util.Properties
 import com.machinedoll.gate.schema.SensorReading
 import com.sksamuel.avro4s.AvroSchema
 import com.typesafe.config.Config
-import org.apache.avro.generic.GenericRecord
-import org.apache.flink.api.common.ExecutionConfig
+import org.apache.avro.generic.{GenericDatumReader, GenericRecord}
+import org.apache.avro.io.DecoderFactory
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.api.common.typeinfo.TypeInformation
-import org.apache.flink.api.common.typeutils.{TypeSerializer, TypeSerializerSnapshot}
-import org.apache.flink.core.memory.{DataInputView, DataOutputView}
 import org.apache.flink.formats.avro.AvroDeserializationSchema
-import org.apache.flink.streaming.api.datastream.DataStream
 import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaConsumer, KafkaDeserializationSchema}
 import org.apache.flink.streaming.util.serialization.JSONKeyValueDeserializationSchema
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -76,5 +73,41 @@ object SourceCollection {
     consumer.setStartFromEarliest()
 
     consumer
+  }
+
+  def getKafkaAvroSensorReadingSource(config: Config, topic: String): FlinkKafkaConsumer[GenericRecord] = {
+    val props = new Properties()
+    props.setProperty("bootstrap.servers",
+      config.getString("kafka.kafka-server"))
+    props.setProperty("zookeeper.connect",
+      config.getString("kafka.zookeeper-server"))
+    props.setProperty("group.id",
+      config.getString("kafka.group.id"))
+
+    val schema = AvroSchema[SensorReading]
+
+//    val reader = new GenericDatumReader[GenericRecord](schema)
+
+    new FlinkKafkaConsumer(
+      topic,
+      AvroDeserializationSchema.forGeneric(schema),
+//      new KafkaDeserializationSchema[SensorReading] {
+//        override def isEndOfStream(nextElement: SensorReading): Boolean = false
+//
+//        override def deserialize(record: ConsumerRecord[Array[Byte], Array[Byte]]): SensorReading = {
+//          val decoder = DecoderFactory.get.binaryDecoder(record.value(), null)
+//          val generocRecord = reader.read(null, decoder)
+//          new SensorReading(
+//            id = generocRecord.get("id").toString,
+//            reading = generocRecord.get("reading").toString.toFloat,
+//            timestamp = generocRecord.get("timestamp").toString.toLong
+//          )
+//        }
+//
+//        override def getProducedType: TypeInformation[SensorReading] = TypeInformation.of(classOf[SensorReading])
+//      },
+      props
+    )
+
   }
 }
