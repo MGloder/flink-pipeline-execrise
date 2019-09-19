@@ -5,8 +5,11 @@ import java.lang
 import java.util.{Optional, Properties}
 
 import com.machinedoll.gate.partitioner.KafkaCustomPartitioner
-import com.machinedoll.gate.schema.{EventTest, SensorReading}
+import com.machinedoll.gate.schema.SensorReading
+import com.sksamuel.avro4s.AvroSchema
 import com.typesafe.config.Config
+import org.apache.avro.generic.{GenericData, GenericDatumWriter, GenericRecord}
+import org.apache.avro.io.EncoderFactory
 import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.streaming.connectors.kafka.partitioner.FlinkKafkaPartitioner
 import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaProducer, KafkaSerializationSchema}
@@ -25,11 +28,26 @@ object SinkCollection {
     new FlinkKafkaProducer[SensorReading](topic, new KafkaSerializationSchema[SensorReading] {
       override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
         val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
-        val oos = new ObjectOutputStream(stream)
-        oos.writeObject(element)
-        oos.close()
-        val result = stream.toByteArray
-        new ProducerRecord[Array[Byte], Array[Byte]](topic, result)
+        try {
+          val schema = AvroSchema[SensorReading]
+          val writer = new GenericDatumWriter[GenericRecord](schema)
+          val binaryEncoder = EncoderFactory.get().binaryEncoder(stream, null)
+          val sensorReadingRecord = new GenericData.Record(schema)
+          sensorReadingRecord.put("id", element.id)
+          sensorReadingRecord.put("reading", element.reading)
+          sensorReadingRecord.put("timestamp", element.timestamp)
+          writer.write(sensorReadingRecord, binaryEncoder)
+          binaryEncoder.flush()
+          val serializedBytes: Array[Byte] = stream.toByteArray
+          new ProducerRecord[Array[Byte], Array[Byte]](topic, serializedBytes)
+        } catch {
+          case e: Exception => {
+            println(e.getMessage)
+            new ProducerRecord[Array[Byte], Array[Byte]](topic, "".getBytes())
+          }
+        } finally {
+          stream.close()
+        }
       }
     }, props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)
   }
@@ -78,11 +96,10 @@ object SinkCollection {
     props.setProperty("group.id",
       config.getString("kafka.group.id"))
 
-    new FlinkKafkaProducer[EventTest](topic, new KafkaSerializationSchema[EventTest] {
-      val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
-      val oos = new ObjectOutputStream(stream)
-
-      override def serialize(element: EventTest, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
+    new FlinkKafkaProducer[SensorReading](topic, new KafkaSerializationSchema[SensorReading] {
+      override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
+        val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
+        val oos = new ObjectOutputStream(stream)
         oos.writeObject(element)
         oos.close()
         val result = stream.toByteArray
