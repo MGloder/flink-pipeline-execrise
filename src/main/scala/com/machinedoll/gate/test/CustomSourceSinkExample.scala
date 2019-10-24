@@ -1,10 +1,9 @@
 package com.machinedoll.gate.test
 
 import com.machinedoll.gate.generator.ResettableCustomSource
+import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-
-import org.apache.flink.api.scala._
 
 object CustomSourceSinkExample {
   def main(args: Array[String]): Unit = {

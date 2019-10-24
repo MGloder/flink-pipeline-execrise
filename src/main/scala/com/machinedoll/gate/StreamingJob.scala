@@ -21,33 +21,33 @@ package com.machinedoll.gate
 import com.google.gson.Gson
 import com.machinedoll.gate.generator.SimpleSequenceObjectGenerator
 import com.machinedoll.gate.schema.EventTest
-import com.machinedoll.gate.sink.SinkCollection
 import com.typesafe.config.ConfigFactory
 import org.apache.flink.api.common.functions.FlatMapFunction
-import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.watermark.Watermark
-import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.util.Collector
 
 
 /**
- * Skeleton for a Flink Streaming Job.
- *
- * For a tutorial how to write a Flink streaming application, check the
- * tutorials and examples on the <a href="http://flink.apache.org/docs/stable/">Flink Website</a>.
- *
- * To package your application into a JAR file for execution, run
- * 'mvn clean package' on the command line.
- *
- * If you change the name of the main class (with the public static void main(String[] args))
- * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
- */
+  * Skeleton for a Flink Streaming Job.
+  *
+  * For a tutorial how to write a Flink streaming application, check the
+  * tutorials and examples on the <a href="http://flink.apache.org/docs/stable/">Flink Website</a>.
+  *
+  * To package your application into a JAR file for execution, run
+  * 'mvn clean package' on the command line.
+  *
+  * If you change the name of the main class (with the public static void main(String[] args))
+  * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
+  */
 object StreamingJob {
   def main(args: Array[String]): Unit = {
 
     val config = ConfigFactory.parseResources("connection.conf")
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+
+    val simpleObject: DataStream[EventTest] = env.addSource(new SimpleSequenceObjectGenerator(1000, 1, 1))
+    simpleObject.filter(r => r.description.id > 0).print()
+
 
     env.execute()
   }
