@@ -57,42 +57,42 @@ object SinkCollection {
     }, props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)
   }
 
-//  def getKafkaAvroSpecificSink(config: Config, topic: String): FlinkKafkaProducer[SensorReading] = {
-//    val props = new Properties()
-//    props.setProperty("bootstrap.servers",
-//      config.getString("kafka.kafka-server"))
-//    props.setProperty("zookeeper.connect",
-//      config.getString("kafka.zookeeper-server"))
-//    props.setProperty("group.id",
-//      config.getString("kafka.group.id"))
-//
-//    new FlinkKafkaProducer[SensorReading](
-//      topic, new KafkaSerializationSchema[SensorReading] {
-//        override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
-//          val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
-//          try {
-//            val schema = AvroSchema[SensorReading]
-//            val writer = new GenericDatumWriter[SensorReading](schema)
-//            val binaryEncoder = EncoderFactory.get().binaryEncoder(stream, null)
-//            val sensorReadingWriter = new SpecificData().createDatumWriter(schema)
-//            sensorReadingWriter.write(element, binaryEncoder)
-////            sensorReadingWriter.write(element.asInstanceOf[SpecificData], binaryEncoder)
-//            binaryEncoder.flush()
-//            val serializedBytes: Array[Byte] = stream.toByteArray
-//            new ProducerRecord[Array[Byte], Array[Byte]](topic, serializedBytes)
-//          } catch {
-//            case e: Exception => {
-//              println(e.getMessage)
-//              new ProducerRecord[Array[Byte], Array[Byte]](topic, "".getBytes())
-//            }
-//          } finally {
-//            stream.close()
-//          }
-//        }
-//      },
-//      props,
-//      FlinkKafkaProducer.Semantic.EXACTLY_ONCE)
-//  }
+  //  def getKafkaAvroSpecificSink(config: Config, topic: String): FlinkKafkaProducer[SensorReading] = {
+  //    val props = new Properties()
+  //    props.setProperty("bootstrap.servers",
+  //      config.getString("kafka.kafka-server"))
+  //    props.setProperty("zookeeper.connect",
+  //      config.getString("kafka.zookeeper-server"))
+  //    props.setProperty("group.id",
+  //      config.getString("kafka.group.id"))
+  //
+  //    new FlinkKafkaProducer[SensorReading](
+  //      topic, new KafkaSerializationSchema[SensorReading] {
+  //        override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
+  //          val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
+  //          try {
+  //            val schema = AvroSchema[SensorReading]
+  //            val writer = new GenericDatumWriter[SensorReading](schema)
+  //            val binaryEncoder = EncoderFactory.get().binaryEncoder(stream, null)
+  //            val sensorReadingWriter = new SpecificData().createDatumWriter(schema)
+  //            sensorReadingWriter.write(element, binaryEncoder)
+  ////            sensorReadingWriter.write(element.asInstanceOf[SpecificData], binaryEncoder)
+  //            binaryEncoder.flush()
+  //            val serializedBytes: Array[Byte] = stream.toByteArray
+  //            new ProducerRecord[Array[Byte], Array[Byte]](topic, serializedBytes)
+  //          } catch {
+  //            case e: Exception => {
+  //              println(e.getMessage)
+  //              new ProducerRecord[Array[Byte], Array[Byte]](topic, "".getBytes())
+  //            }
+  //          } finally {
+  //            stream.close()
+  //          }
+  //        }
+  //      },
+  //      props,
+  //      FlinkKafkaProducer.Semantic.EXACTLY_ONCE)
+  //  }
 
 
   def getKafkaStringSinkTest(config: Config, topic: String): FlinkKafkaProducer[String] = {
@@ -134,9 +134,9 @@ object SinkCollection {
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.0.108:9092")
     props.put(ProducerConfig.ACKS_CONFIG, "all")
     //    props.put(ProducerConfig.RETRIES_CONFIG, 0)
-//    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
-//    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer])
-//    props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://192.168.0.108:8081")
+    //    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
+    //    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer])
+    //    props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://192.168.0.108:8081")
 
     new FlinkKafkaProducer[SensorReading](topic, new KafkaSerializationSchema[SensorReading] {
 
@@ -154,7 +154,7 @@ object SinkCollection {
         oos.writeObject(element)
         oos.close()
         val result = stream.toByteArray
-        new ProducerRecord[Array[Byte], Array[Byte]](topic, element.id, result)
+        new ProducerRecord[Array[Byte], Array[Byte]](topic, result)
       }
     }, props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)
   }
