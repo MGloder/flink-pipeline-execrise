@@ -134,19 +134,27 @@ object SinkCollection {
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.0.108:9092")
     props.put(ProducerConfig.ACKS_CONFIG, "all")
     //    props.put(ProducerConfig.RETRIES_CONFIG, 0)
-    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
-    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer])
-    props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://192.168.0.108:8081")
+//    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
+//    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer])
+//    props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://192.168.0.108:8081")
 
     new FlinkKafkaProducer[SensorReading](topic, new KafkaSerializationSchema[SensorReading] {
 
-      override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[String, SensorReading] = {
-        //        val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
-        //        val oos = new ObjectOutputStream(stream)
-        //        oos.writeObject(element)
-        //        oos.close()
-        //        val result = stream.toByteArray
-        new ProducerRecord[String, SensorReading](topic, element.id, element)
+      //      override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[Array] = {
+      //                val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
+      //                val oos = new ObjectOutputStream(stream)
+      //                oos.writeObject(element)
+      //        oos.close()
+      //        val result = stream.toByteArray
+      //        new ProducerRecord[String, SensorReading](topic, element.id, element)
+      //      }
+      override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
+        val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
+        val oos = new ObjectOutputStream(stream)
+        oos.writeObject(element)
+        oos.close()
+        val result = stream.toByteArray
+        new ProducerRecord[Array[Byte], Array[Byte]](topic, element.id, result)
       }
     }, props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)
   }
