@@ -8,6 +8,7 @@ import com.machinedoll.gate.partitioner.KafkaCustomPartitioner
 import com.machinedoll.gate.schema.SensorReading
 import com.sksamuel.avro4s.AvroSchema
 import com.typesafe.config.Config
+import io.confluent.kafka.serializers.{AbstractKafkaAvroSerDeConfig, KafkaAvroSerializer}
 import org.apache.avro.generic.{GenericData, GenericDatumWriter, GenericRecord}
 import org.apache.avro.io.EncoderFactory
 import org.apache.avro.specific.SpecificData
@@ -16,7 +17,8 @@ import org.apache.flink.formats.avro.AvroRowSerializationSchema
 import org.apache.flink.formats.avro.utils.AvroKryoSerializerUtils
 import org.apache.flink.streaming.connectors.kafka.partitioner.FlinkKafkaPartitioner
 import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaProducer, KafkaSerializationSchema}
-import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.{ProducerConfig, ProducerRecord}
+import org.apache.kafka.common.serialization.StringSerializer
 
 object SinkCollection {
   def getKafkaAvroSink(config: Config, topic: String): FlinkKafkaProducer[SensorReading] = {
@@ -129,21 +131,22 @@ object SinkCollection {
 
   def getKafkaCustomSerializerSink(config: Config, topic: String) = {
     val props = new Properties()
-    props.setProperty("bootstrap.servers",
-      config.getString("kafka.kafka-server"))
-    props.setProperty("zookeeper.connect",
-      config.getString("kafka.zookeeper-server"))
-    props.setProperty("group.id",
-      config.getString("kafka.group.id"))
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.0.108:9092")
+    props.put(ProducerConfig.ACKS_CONFIG, "all")
+    //    props.put(ProducerConfig.RETRIES_CONFIG, 0)
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer])
+    props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://192.168.0.108:8081")
 
     new FlinkKafkaProducer[SensorReading](topic, new KafkaSerializationSchema[SensorReading] {
-      override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[Array[Byte], Array[Byte]] = {
-        val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
-        val oos = new ObjectOutputStream(stream)
-        oos.writeObject(element)
-        oos.close()
-        val result = stream.toByteArray
-        new ProducerRecord[Array[Byte], Array[Byte]](topic, result)
+
+      override def serialize(element: SensorReading, timestamp: lang.Long): ProducerRecord[String, SensorReading] = {
+        //        val stream: ByteArrayOutputStream = new ByteArrayOutputStream()
+        //        val oos = new ObjectOutputStream(stream)
+        //        oos.writeObject(element)
+        //        oos.close()
+        //        val result = stream.toByteArray
+        new ProducerRecord[String, SensorReading](topic, element.id, element)
       }
     }, props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)
   }
